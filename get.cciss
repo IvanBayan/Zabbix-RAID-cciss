@@ -1,0 +1,58 @@
+#!/usr/bin/perl -w
+use strict;
+
+my $cciss_vol_status =  "/usr/bin/cciss_vol_status -u";
+my $RETURN_CODES = {
+    "OK" => 0,
+    "FAILED" => 1,
+    "Not configured" => 2,
+    "Using interim recovery mode" => 3,
+    "Ready for recovery operation" => 4,
+    "Currently recovering" => 5,
+    "Wrong physical drive was replaced" => 6,
+    "A physical drive is not properly connected" => 7,
+    "Hardware is overheating" => 8,
+    "Hardware was overheated" => 9,
+    "Currently expannding" => 10,
+    "Not yet available" => 11,
+    "Queued for expansion" => 12,
+    "Unknown status"        => 42
+};
+
+if ( $ARGV[0] !~ m#^(?:/dev/sg\d+)|(?:/dev/cciss/c\d+d0)$# ) {
+    die("$ARGV[0] wrong controller." );
+}
+
+if ( $ARGV[1] !~ m#^/dev/[A-Za-z0-9-/]+$# ) {
+    die("$ARGV[1] wrong device." );
+}
+
+if ( $ARGV[2] !~ /^[ns]$/i) {
+    die("Wrong metric type $ARGV[2] must be 'n' or 's'." );
+}
+
+
+
+my @output = `$cciss_vol_status $ARGV[0] 2>&1`;
+foreach my $line (@output) {
+    next if ( $line =~ /^cciss_vol_status/ );
+    $line =~ m/^([^:]+): (.+) status: ([^:]+)\..*$/;
+    (my $device, my $volume, my $status) = ( $1, $2, $3 );
+    if ( $device eq $ARGV[1] ) {
+        if ($ARGV[2] =~ /^s/i ) {
+            print $status;
+            exit;
+        } else {
+            if (defined($RETURN_CODES->{$status})) {
+                print $RETURN_CODES->{$status};
+            } else {
+                print "42";
+            }
+            exit;            
+        }        
+    }
+}
+
+die("Can't find device $ARGV[1] on controller $ARGV[0]");
+    
+

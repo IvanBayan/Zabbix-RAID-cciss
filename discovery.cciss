@@ -1,0 +1,112 @@
+#!/usr/bin/perl -w
+use strict;
+use JSON;
+
+use constant use_cciss   => 0;
+use constant use_sg   => 1;
+my $lsmod =             "/bin/lsmod";
+my $cciss_vol_status =  "/usr/bin/cciss_vol_status -u";
+
+my @controllers;
+my $data = [];
+my $entry;
+
+my $modules = `$lsmod`;
+
+die("You must edit $0 for selection of controller device type.") unless( use_cciss == 1 || use_sg == 1);
+
+if ( use_cciss == 1) {    
+    # Check for module
+    if ($modules !~ /\ncciss\s/) {
+        $entry = {
+            '{#CONTROLLER}'     => 'ERRORR' . rand(108),
+            '{#DEVICE}'         => 'Kernel module cciss is not loaded',
+            '{#VOLUME}'         => 'Kernel module cciss is not loaded'
+            
+        };
+        push( @$data, $entry );
+    }
+    # Search for devices
+    if ( -d "/dev/cciss/" && -r "/dev/cciss/" ) {
+        opendir(DIR, "/dev/cciss/");
+        foreach my $dev (readdir(DIR)) {
+            push( @controllers, "/dev/cciss/$dev" ) if( $dev =~ /^c\d+d0/ );
+        }
+        closedir(DIR);
+    } else {
+        $entry = {
+            '{#CONTROLLER}'     => 'ERRORR' . rand(108),
+            '{#DEVICE}'         => 'Dir /dev/cciss/ does not exist or not readable',
+            '{#VOLUME}'         => 'Dir /dev/cciss/ does not exist or not readable'
+            
+        };
+        push( @$data, $entry );
+    }
+    
+}
+
+if ( use_sg == 1 ) {
+    if ( $modules !~ /\nsg\s/ ) {
+        $entry = {
+            '{#CONTROLLER}'     => 'ERRORR' . rand(108),
+            '{#DEVICE}'         => 'Kernel module sg is not loaded',
+            '{#VOLUME}'         => 'Kernel module sg is not loaded'        
+        };
+        push( @$data, $entry );
+    }
+    # Search for devices
+    if ( -d "/dev" && -r "/dev" ) {
+        opendir(DIR, "/dev");
+        foreach my $dev (readdir(DIR)) {
+            push( @controllers, "/dev/$dev" ) if( $dev =~ /^sg\d+/ );
+        }
+        closedir(DIR);
+    } else {
+        $entry = {
+            '{#CONTROLLER}'     => 'ERRORR' . rand(108),
+            '{#DEVICE}'         => 'Dir /dev does not exist or not readable',
+            '{#VOLUME}'         => 'Dir /dev does not exist or not readable'
+        };
+        push( @$data, $entry );
+    }
+
+}
+
+# Check for existing controllers
+if ( scalar(@controllers) == 0 ) {
+        $entry = {
+            '{#CONTROLLER}'     => 'ERRORR' . rand(108),
+            '{#DEVICE}'         => 'Could not find any suitable controller',
+            '{#VOLUME}'         => 'Could not find any suitable controller'
+        };
+        push( @$data, $entry );
+}
+
+
+
+if ( scalar(@{$data}) > 0 ) {
+    my $json = { data => $data };
+    $json = encode_json( $json);
+    print $json;
+    exit;
+}
+
+foreach my $controller (@controllers) {
+    my @output = `$cciss_vol_status $controller 2>&1`;
+    foreach my $line (@output) {
+        next if ( $line =~ /^cciss_vol_status/ );
+        $line =~ m/^([^:]+): (.+) status: ([^:]+)$/;
+        #(my $device, my $volume, my $status) = split( /: /, $line, 3 );
+        (my $device, my $volume, my $status) = ( $1, $2, $3 );
+        $entry = {
+            '{#CONTROLLER}'     => "$controller",
+            '{#DEVICE}'         => "$device",
+            '{#VOLUME}'         => "$volume"
+        };
+        push( @$data, $entry );
+    }
+    
+}
+my $json = { data => $data };
+$json = encode_json( $json);
+print $json;
