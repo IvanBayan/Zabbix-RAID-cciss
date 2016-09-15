@@ -36,7 +36,7 @@ if ( $ARGV[0] =~ m/^ERRORR_/) {
     if ( $ARGV[2] =~ m/n/i ) {
         print "43";
     } else {
-        print "External script discovery.cciss errorr";
+        print "External script discovery.cciss error";
     }
     exit;
 }

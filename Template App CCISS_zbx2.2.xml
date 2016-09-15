@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>2.0</version>
-    <date>2016-09-14T12:20:11Z</date>
+    <date>2016-09-15T15:38:57Z</date>
     <groups>
         <group>
             <name>Templates</name>
@@ -29,7 +29,7 @@
                     <snmp_community/>
                     <snmp_oid/>
                     <key>discovery.cciss</key>
-                    <delay>300</delay>
+                    <delay>3600</delay>
                     <status>0</status>
                     <allowed_hosts/>
                     <snmpv3_contextname/>
@@ -145,7 +145,7 @@
                             <multiplier>0</multiplier>
                             <snmp_oid/>
                             <key>get.cciss[&quot;{#CONTROLLER}&quot;,&quot;{#DEVICE}&quot;,&quot;n&quot;]</key>
-                            <delay>600</delay>
+                            <delay>1800</delay>
                             <history>90</history>
                             <trends>365</trends>
                             <status>0</status>
@@ -191,7 +191,7 @@
                             <delay>600</delay>
                             <history>90</history>
                             <trends>365</trends>
-                            <status>0</status>
+                            <status>1</status>
                             <value_type>1</value_type>
                             <allowed_hosts/>
                             <units/>
