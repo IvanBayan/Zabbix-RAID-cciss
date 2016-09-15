@@ -38,7 +38,7 @@ if ( $ARGV[0] =~ m/^ERRORR_/) {
     } else {
         print "External script discovery.cciss errorr";
     }
-    
+    exit;
 }
 
 
