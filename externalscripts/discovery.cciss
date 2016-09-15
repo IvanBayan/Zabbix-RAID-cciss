@@ -15,19 +15,32 @@ my $modules = `$lsmod`;
 
 die("You must edit $0 for selection of controller device type.") unless( use_cciss == 1 || use_sg == 1);
 
+unless( $cciss_vol_status =~ /^([^\s]+)/ && -x $1 ) {
+        $entry = {
+            '{#CONTROLLER}'     => 'ERRORR_cciss',
+            '{#DEVICE}'         => "$1 is not executable",
+            '{#VOLUME}'         => "$1 is not executable"
+        };
+        push( @$data, $entry );
+        my $json = { data => $data };
+        $json = encode_json( $json);
+        print $json;
+        exit;
+}
+
 if ( use_cciss == 1) {    
     # Check for module
     if ($modules !~ /\ncciss\s/) {
         $entry = {
-            '{#CONTROLLER}'     => 'ERRORR' . rand(108),
-            '{#DEVICE}'         => 'Kernel module cciss is not loaded',
-            '{#VOLUME}'         => 'Kernel module cciss is not loaded'
+            '{#CONTROLLER}'     => 'ERRORR_controller',
+            '{#DEVICE}'         => 'ERRORR Kernel module cciss is not loaded',
+            '{#VOLUME}'         => 'ERRORR Kernel module cciss is not loaded'
             
         };
         push( @$data, $entry );
-    }
+    } elsif ( -d "/dev/cciss/" && -r "/dev/cciss/" ) {
     # Search for devices
-    if ( -d "/dev/cciss/" && -r "/dev/cciss/" ) {
+    
         opendir(DIR, "/dev/cciss/");
         foreach my $dev (readdir(DIR)) {
             push( @controllers, "/dev/cciss/$dev" ) if( $dev =~ /^c\d+d0/ );
@@ -35,9 +48,9 @@ if ( use_cciss == 1) {
         closedir(DIR);
     } else {
         $entry = {
-            '{#CONTROLLER}'     => 'ERRORR' . rand(108),
-            '{#DEVICE}'         => 'Dir /dev/cciss/ does not exist or not readable',
-            '{#VOLUME}'         => 'Dir /dev/cciss/ does not exist or not readable'
+            '{#CONTROLLER}'     => 'ERRORR_controller',
+            '{#DEVICE}'         => 'ERRORR Dir /dev/cciss/ does not exist or not readable',
+            '{#VOLUME}'         => 'ERRORR Dir /dev/cciss/ does not exist or not readable'
             
         };
         push( @$data, $entry );
@@ -48,14 +61,13 @@ if ( use_cciss == 1) {
 if ( use_sg == 1 ) {
     if ( $modules !~ /\nsg\s/ ) {
         $entry = {
-            '{#CONTROLLER}'     => 'ERRORR' . rand(108),
-            '{#DEVICE}'         => 'Kernel module sg is not loaded',
-            '{#VOLUME}'         => 'Kernel module sg is not loaded'        
+            '{#CONTROLLER}'     => 'ERRORR_controller',
+            '{#DEVICE}'         => 'ERRORR Kernel module sg is not loaded',
+            '{#VOLUME}'         => 'ERRORR Kernel module sg is not loaded'        
         };
         push( @$data, $entry );
-    }
-    # Search for devices
-    if ( -d "/dev" && -r "/dev" ) {
+    } elsif ( -d "/dev" && -r "/dev" ) {
+    # Search for devices    
         opendir(DIR, "/dev");
         foreach my $dev (readdir(DIR)) {
             push( @controllers, "/dev/$dev" ) if( $dev =~ /^sg\d+/ );
@@ -63,9 +75,9 @@ if ( use_sg == 1 ) {
         closedir(DIR);
     } else {
         $entry = {
-            '{#CONTROLLER}'     => 'ERRORR' . rand(108),
-            '{#DEVICE}'         => 'Dir /dev does not exist or not readable',
-            '{#VOLUME}'         => 'Dir /dev does not exist or not readable'
+            '{#CONTROLLER}'     => 'ERRORR_controller',
+            '{#DEVICE}'         => 'ERRORR Dir /dev does not exist or not readable',
+            '{#VOLUME}'         => 'ERRORR Dir /dev does not exist or not readable'
         };
         push( @$data, $entry );
     }
@@ -75,13 +87,12 @@ if ( use_sg == 1 ) {
 # Check for existing controllers
 if ( scalar(@controllers) == 0 ) {
         $entry = {
-            '{#CONTROLLER}'     => 'ERRORR' . rand(108),
-            '{#DEVICE}'         => 'Could not find any suitable controller',
-            '{#VOLUME}'         => 'Could not find any suitable controller'
+            '{#CONTROLLER}'     => 'ERRORR_controller',
+            '{#DEVICE}'         => 'ERRORR Could not find any suitable controller',
+            '{#VOLUME}'         => 'ERRORR Could not find any suitable controller'
         };
         push( @$data, $entry );
 }
-
 
 
 if ( scalar(@{$data}) > 0 ) {
