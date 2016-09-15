@@ -18,8 +18,8 @@ die("You must edit $0 for selection of controller device type.") unless( use_cci
 unless( $cciss_vol_status =~ /^([^\s]+)/ && -x $1 ) {
         $entry = {
             '{#CONTROLLER}'     => 'ERRORR_cciss',
-            '{#DEVICE}'         => "$1 is not executable",
-            '{#VOLUME}'         => "$1 is not executable"
+            '{#DEVICE}'         => "ERRORR $1 is not executable",
+            '{#VOLUME}'         => "ERRORR $1 is not executable"
         };
         push( @$data, $entry );
         my $json = { data => $data };
