@@ -16,14 +16,15 @@ my $RETURN_CODES = {
     "Currently expannding" => 10,
     "Not yet available" => 11,
     "Queued for expansion" => 12,
-    "Unknown status"        => 42
+    "Unknown status"        => 42,
+    "External script discovery.cciss errorr"  => 43
 };
 
-if ( $ARGV[0] !~ m#^(?:/dev/sg\d+)|(?:/dev/cciss/c\d+d0)$# ) {
+if ( $ARGV[0] !~ m#^(?:/dev/sg\d+)|(?:/dev/cciss/c\d+d0)|(?:ERRORR_.+)$# ) {
     die("$ARGV[0] wrong controller." );
 }
 
-if ( $ARGV[1] !~ m#^/dev/[A-Za-z0-9-/]+$# ) {
+if ( $ARGV[1] !~ m#^(?:/dev/[A-Za-z0-9-/]+)|(^ERRORR.+)$# ) {
     die("$ARGV[1] wrong device." );
 }
 
@@ -31,6 +32,14 @@ if ( $ARGV[2] !~ /^[ns]$/i) {
     die("Wrong metric type $ARGV[2] must be 'n' or 's'." );
 }
 
+if ( $ARGV[0] =~ m/^ERRORR_/) {
+    if ( $ARGV[2] =~ m/n/i ) {
+        print "43";
+    } else {
+        print "External script discovery.cciss errorr";
+    }
+    
+}
 
 
 my @output = `$cciss_vol_status $ARGV[0] 2>&1`;
