@@ -32,7 +32,7 @@ if ( use_cciss == 1) {
     # Check for module
     if ($modules !~ /\ncciss\s/) {
         $entry = {
-            '{#CONTROLLER}'     => 'ERRORR_controller',
+            '{#CONTROLLER}'     => 'ERRORR_module',
             '{#DEVICE}'         => 'ERRORR Kernel module cciss is not loaded',
             '{#VOLUME}'         => 'ERRORR Kernel module cciss is not loaded'
             
@@ -48,7 +48,7 @@ if ( use_cciss == 1) {
         closedir(DIR);
     } else {
         $entry = {
-            '{#CONTROLLER}'     => 'ERRORR_controller',
+            '{#CONTROLLER}'     => 'ERRORR_device',
             '{#DEVICE}'         => 'ERRORR Dir /dev/cciss/ does not exist or not readable',
             '{#VOLUME}'         => 'ERRORR Dir /dev/cciss/ does not exist or not readable'
             
@@ -61,7 +61,7 @@ if ( use_cciss == 1) {
 if ( use_sg == 1 ) {
     if ( $modules !~ /\nsg\s/ ) {
         $entry = {
-            '{#CONTROLLER}'     => 'ERRORR_controller',
+            '{#CONTROLLER}'     => 'ERRORR_module',
             '{#DEVICE}'         => 'ERRORR Kernel module sg is not loaded',
             '{#VOLUME}'         => 'ERRORR Kernel module sg is not loaded'        
         };
@@ -75,7 +75,7 @@ if ( use_sg == 1 ) {
         closedir(DIR);
     } else {
         $entry = {
-            '{#CONTROLLER}'     => 'ERRORR_controller',
+            '{#CONTROLLER}'     => 'ERRORR_device',
             '{#DEVICE}'         => 'ERRORR Dir /dev does not exist or not readable',
             '{#VOLUME}'         => 'ERRORR Dir /dev does not exist or not readable'
         };
