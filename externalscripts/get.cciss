@@ -52,6 +52,10 @@ foreach my $line (@output) {
             print $status;
             exit;
         } else {
+            if ( $status =~ m/\s\s/) {
+                 $status =~ s/^([^\.]+).*/$1/;
+            }
+            
             if (defined($RETURN_CODES->{$status})) {
                 print $RETURN_CODES->{$status};
             } else {
